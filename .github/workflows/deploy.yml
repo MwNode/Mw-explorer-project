@@ -1,0 +1,31 @@
+name: Deploy to Ghost
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Install dependencies
+      run: sudo apt-get install jq
+
+    - name: Upload content to Ghost
+      run: |
+        for file in $(find . -name '*.md'); do
+          title=$(head -n 1 "$file" | sed 's/^# //')
+          content=$(cat "$file")
+          data=$(jq -n --arg title "$title" --arg content "$content" '{posts: [{title: $title, markdown: $content}]}')
+          curl -X POST http://yourdomain.com/ghost/api/v3/admin/posts/ \
+            -H "Authorization: Ghost ${{ secrets.GHOST_ADMIN_API_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d "$data"
+        done
+      env:
+        GHOST_ADMIN_API_KEY: ${{ secrets.GHOST_ADMIN_API_KEY }}
