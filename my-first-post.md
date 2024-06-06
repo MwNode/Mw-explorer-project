@@ -30,3 +30,5 @@ Query wallet balances
 nibid q bank balances $(nibid keys show wallet -a)
 ```
 ## Managing validators 
+
+end
